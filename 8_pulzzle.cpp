@@ -13,8 +13,8 @@ private:
     int size;
     int **tiles;
     int g;
-public:
 
+public:
     Board()
     {
         size = 0;
@@ -52,10 +52,9 @@ public:
                 this->tiles[i][j] = tiles[i * size + j];
             }
         }
-            
     }
-    
-    //copy constructor
+
+    // copy constructor
     Board(const Board &b) : g(b.g)
     {
         this->size = b.size;
@@ -222,7 +221,8 @@ public:
 
     bool equal(Board board) const
     {
-        if (this->size != board.size) return false;
+        if (this->size != board.size)
+            return false;
 
         for (int i = 0; i < size; i++)
         {
@@ -236,12 +236,12 @@ public:
         }
         return true;
     }
-    
+
     Board moveLeft(int row, int col)
     {
         if (col == 0)
             return *this;
-        
+
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row][col - 1]);
         this->g++;
@@ -251,7 +251,7 @@ public:
     {
         if (col == size - 1)
             return *this;
-        
+
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row][col + 1]);
         this->g++;
@@ -261,18 +261,17 @@ public:
     {
         if (row == 0)
             return *this;
-        
+
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row - 1][col]);
         this->g++;
         return newBoard;
-
     }
     Board moveDown(int row, int col)
     {
         if (row == size - 1)
             return *this;
-        
+
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row + 1][col]);
         this->g++;
@@ -324,71 +323,79 @@ public:
     {
         return !equal(b);
     }
-
 };
 
-class Solver {
-    private:
-        Board initial;
-        int moves;
-        vector<Board> solution;
-    
-    public:
-        Solver(Board initial) : initial(initial), moves(0) {
-            unordered_set<string> visited;
-            priority_queue<Board, vector<Board>, greater<Board>> pq;
-            unordered_map<string, string> parent;
-    
-            pq.push(initial);
-            parent[initial.toString()] = "";
-    
-            Board goalBoard(0);
-            bool found = false;
-    
-            while (!pq.empty()) {
-                Board current = pq.top();
-                pq.pop();
-    
-                if (visited.find(current.toString()) != visited.end())
-                    continue;
-                visited.insert(current.toString());
-    
-                if (current.isGoal()) {
-                    goalBoard = current;
-                    found = true;
-                    break;
-                }
-    
-                vector<Board> neighbors = current.neighbors();
-                for (Board neighbor : neighbors) {
-                    if (visited.find(neighbor.toString()) == visited.end()) {
-                        if (parent.find(neighbor.toString()) == parent.end())
-                            parent[neighbor.toString()] = current.toString();
-                        pq.push(neighbor);
-                    }
-                }
+class Solver
+{
+private:
+    Board initial;
+    int moves;
+    vector<Board> solution;
+
+public:
+    Solver(Board initial) : initial(initial), moves(0)
+    {
+        unordered_set<string> visited;
+        priority_queue<Board, vector<Board>, greater<Board>> pq;
+        unordered_map<string, string> parent;
+
+        pq.push(initial);
+        parent[initial.toString()] = "";
+
+        Board goalBoard(0);
+        bool found = false;
+
+        while (!pq.empty())
+        {
+            Board current = pq.top();
+            pq.pop();
+
+            if (visited.find(current.toString()) != visited.end())
+                continue;
+            visited.insert(current.toString());
+
+            if (current.isGoal())
+            {
+                goalBoard = current;
+                found = true;
+                break;
             }
-    
-            if (found) {
-                vector<string> path;
-                string currentState = goalBoard.toString();
-                while (!currentState.empty()) {
-                    path.push_back(currentState);
-                    currentState = parent[currentState];
+
+            vector<Board> neighbors = current.neighbors();
+            for (Board neighbor : neighbors)
+            {
+                if (visited.find(neighbor.toString()) == visited.end())
+                {
+                    if (parent.find(neighbor.toString()) == parent.end())
+                        parent[neighbor.toString()] = current.toString();
+                    pq.push(neighbor);
                 }
-                reverse(path.begin(), path.end());
-    
-                cout << "Solution found in " << path.size() - 1 << " moves:" << endl;
-                for (const auto &state : path) {
-                    cout << state << endl;
-                }
-            } else {
-                cout << "No solution found." << endl;
             }
         }
-    };
-    
 
+        if (found)
+        {
+            vector<string> path;
+            string currentState = goalBoard.toString();
+            while (!currentState.empty())
+            {
+                path.push_back(currentState);
+                currentState = parent[currentState];
+            }
+            reverse(path.begin(), path.end());
+
+            cout << "Solution found in " << path.size() - 1 << " moves:" << endl;
+            for (const auto &state : path)
+            {
+                cout << state << endl;
+            }
+        }
+        else
+        {
+            cout << "No solution found." << endl;
+        }
+    }
+};
 
 int main()
 {
