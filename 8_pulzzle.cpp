@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <unordered_map>
 using namespace std;
+
 class Board
 {
 private:
@@ -244,7 +245,7 @@ public:
 
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row][col - 1]);
-        this->g++;
+        newBoard.g++;
         return newBoard;
     }
     Board moveRight(int row, int col)
@@ -254,7 +255,7 @@ public:
 
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row][col + 1]);
-        this->g++;
+        newBoard.g++;
         return newBoard;
     }
     Board moveUp(int row, int col)
@@ -264,7 +265,7 @@ public:
 
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row - 1][col]);
-        this->g++;
+        newBoard.g++;
         return newBoard;
     }
     Board moveDown(int row, int col)
@@ -274,7 +275,7 @@ public:
 
         Board newBoard(*this);
         swap(newBoard.tiles[row][col], newBoard.tiles[row + 1][col]);
-        this->g++;
+        newBoard.g++;
         return newBoard;
     }
     vector<Board> neighbors()
@@ -395,6 +396,7 @@ public:
             cout << "No solution found." << endl;
         }
     }
+    
 };
 
 int main()
@@ -414,5 +416,6 @@ int main()
     {
         Solver solver(b);
     }
+
     return 0;
 }
