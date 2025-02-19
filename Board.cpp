@@ -2,54 +2,36 @@
 
 Board::Board() : size(0), tiles(nullptr), g(0) {}
 
-Board::Board(int size, bool solved) : g(0), size(size)
+Board::Board(short size, bool solved) : g(0), size(size)
 {
-    allocateTiles();
+    tiles = new short[size * size];
 
-    vector<int> tempTiles(size * size);
-    for (int i = 0; i < size * size - 1; i++)
+    for (short i = 0; i < size * size - 1; i++)
     {
-        tempTiles[i] = i + 1;
+        tiles[i] = i + 1;
     }
     if (size != 0)
     {
-        tempTiles[size * size - 1] = 0;
+        tiles[size * size - 1] = 0;
     }
 
     if (!solved)
     {
         random_device rd;
         mt19937 g(rd());
-        shuffle(tempTiles.begin(), tempTiles.end(), g);
-    }
-
-    for (int i = 0; i < size; ++i)
-    {
-        for (int j = 0; j < size; ++j)
-        {
-            tiles[i][j] = tempTiles[i * size + j];
-        }
+        shuffle(tiles, tiles + size * size, g);
     }
 }
 
 Board::Board(const Board &b) : g(b.g), size(b.size)
 {
-    allocateTiles();
-    for (int i = 0; i < size; ++i)
-    {
-        for (int j = 0; j < size; ++j)
-        {
-            tiles[i][j] = b.tiles[i][j];
-        }
-    }
+    tiles = new short[size * size];
+    copy(b.tiles, b.tiles + size * size, tiles);
 }
+
 
 Board::~Board()
 {
-    for (int i = 0; i < size; ++i)
-    {
-        delete[] tiles[i];
-    }
     delete[] tiles;
 }
 
@@ -58,122 +40,119 @@ Board &Board::operator=(const Board &b)
     if (this == &b)
         return *this;
 
-    for (int i = 0; i < size; ++i)
-    {
-        delete[] tiles[i];
-    }
     delete[] tiles;
-
     size = b.size;
     g = b.g;
-    allocateTiles();
-
-    for (int i = 0; i < size; ++i)
-    {
-        for (int j = 0; j < size; ++j)
-        {
-            tiles[i][j] = b.tiles[i][j];
-        }
-    }
+    tiles = new short[size * size];
+    copy(b.tiles, b.tiles + size * size, tiles);
 
     return *this;
 }
 
 void Board::allocateTiles()
 {
-    tiles = new int *[size];
-    for (int i = 0; i < size; ++i)
-    {
-        tiles[i] = new int[size];
-    }
+    tiles = new short[size * size];
 }
+
+void Board::deallocateTiles()
+{
+    delete[] tiles;
+}
+
 
 string Board::toString() const
 {
     string s = to_string(size) + "\n";
-    for (int i = 0; i < size; ++i)
+    for (short i = 0; i < size; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        for (short j = 0; j < size; ++j)
         {
-            s += to_string(tiles[i][j]) + " ";
+            s += to_string(tiles[i * size + j]) + " ";
         }
         s += "\n";
     }
     return s;
 }
 
-int Board::mahanattan() const
+string Board::hashString() const
 {
-    int distance = 0;
-    for (int i = 0; i < size; ++i)
+    string s = "";
+    for (short i = 0; i < size * size; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        s += to_string(tiles[i]);
+    }
+    return s;
+}
+
+short Board::mahanattan() const
+{
+    short distance = 0;
+    for (short i = 0; i < size * size; ++i)
+    {
+        short value = tiles[i];
+        if (value != 0)
         {
-            int value = tiles[i][j];
-            if (value != 0)
-            {
-                int targetX = (value - 1) / size;
-                int targetY = (value - 1) % size;
-                distance += abs(i - targetX) + abs(j - targetY);
-            }
+            short targetX = (value - 1) / size;
+            short targetY = (value - 1) % size;
+            short currentX = i / size;
+            short currentY = i % size;
+            distance += abs(currentX - targetX) + abs(currentY - targetY);
         }
     }
     return distance;
 }
 
-int Board::hamming()
+
+short Board::hamming() const
 {
-    int distance = 0;
-    for (int i = 0; i < size; ++i)
+    short distance = 0;
+    for (short i = 0; i < size * size - 1; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        if (tiles[i] != i + 1)
         {
-            int value = tiles[i][j];
-            if (value != 0 && value != i * size + j + 1)
-            {
-                distance++;
-            }
+            distance++;
         }
     }
     return distance;
+}
+
+short Board::extractHeuristicFromPatternDB() const
+{
+    PatternDataBase *patternDB = PatternDataBase::getInstance();
+    return patternDB->lookup(*this);
 }
 
 bool Board::isGoal()
 {
-    for (int i = 0; i < size; ++i)
+    for (short i = 0; i < size * size - 1; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        if (tiles[i] != i + 1)
         {
-            if (tiles[i][j] != i * size + j + 1 && (i != size - 1 || j != size - 1))
-            {
-                return false;
-            }
+            return false;
         }
     }
-    return true;
+    return tiles[size * size - 1] == 0;
 }
+
 
 bool Board::isSolvable()
 {
-    vector<int> tempTiles;
-    int blankRow = -1;
-    int inversion = 0;
+    vector<short> tempTiles;
+    short blankRow = -1;
+    short inversion = 0;
 
-    for (int i = 0; i < size; ++i)
+    for (short i = 0; i < size * size; ++i)
     {
-        for (int j = 0; j < size; ++j)
-        {
-            if (tiles[i][j] == 0)
-                blankRow = i;
-            else
-                tempTiles.push_back(tiles[i][j]);
-        }
+        if (tiles[i] == 0)
+            blankRow = i / size; 
+        else
+            tempTiles.push_back(tiles[i]);
     }
 
-    int n = tempTiles.size();
-    for (int i = 0; i < n - 1; ++i)
+    short n = tempTiles.size();
+    for (short i = 0; i < n - 1; ++i)
     {
-        for (int j = i + 1; j < n; ++j)
+        for (short j = i + 1; j < n; ++j)
         {
             if (tempTiles[i] > tempTiles[j])
                 inversion++;
@@ -183,76 +162,79 @@ bool Board::isSolvable()
     if (size % 2 == 1)
         return inversion % 2 == 0;
 
-    return (inversion + (size - blankRow)) % 2 == 0;
+    short blankRowFromBottom = size - blankRow;
+
+    return (inversion + blankRowFromBottom) % 2 == 0;
 }
 
-int Board::tileAt(int row, int col)
+
+short Board::tileAt(short row, short col)
 {
-    return this->tiles[row][col];
+    return this->tiles[row * size + col];
 }
 
-void Board::setTileAt(int row, int col, int value)
+void Board::setTileAt(short row, short col, short value)
 {
-    this->tiles[row][col] = value;
+    this->tiles[row * size + col] = value;
 }
 
 bool Board::equal(const Board &board) const
 {
-    if (this->size != board.size)
+    if (size != board.size)
         return false;
-    for (int i = 0; i < size; ++i)
+
+    for (short i = 0; i < size * size; ++i)
     {
-        for (int j = 0; j < size; ++j)
-        {
-            if (this->tiles[i][j] != board.tiles[i][j])
-            {
-                return false;
-            }
-        }
+        if (tiles[i] != board.tiles[i])
+            return false;
     }
     return true;
 }
 
-Board Board::moveLeft(int row, int col)
+Board Board::moveLeft(short row, short col)
 {
     if (col == 0)
         return *this;
 
     Board newBoard(*this);
-    swap(newBoard.tiles[row][col], newBoard.tiles[row][col - 1]);
+    short index = row * size + col;
+    swap(newBoard.tiles[index], newBoard.tiles[index - 1]);
     newBoard.g++;
     return newBoard;
 }
 
-Board Board::moveRight(int row, int col)
+Board Board::moveRight(short row, short col)
 {
     if (col == size - 1)
         return *this;
 
     Board newBoard(*this);
-    swap(newBoard.tiles[row][col], newBoard.tiles[row][col + 1]);
+    short index = row * size + col;
+    swap(newBoard.tiles[index], newBoard.tiles[index + 1]);
     newBoard.g++;
     return newBoard;
 }
 
-Board Board::moveUp(int row, int col)
+Board Board::moveUp(short row, short col)
 {
     if (row == 0)
         return *this;
 
     Board newBoard(*this);
-    swap(newBoard.tiles[row][col], newBoard.tiles[row - 1][col]);
+    short index = row * size + col;
+    swap(newBoard.tiles[index], newBoard.tiles[index - size]);
     newBoard.g++;
     return newBoard;
 }
 
-Board Board::moveDown(int row, int col)
+Board Board::moveDown(short row, short col)
 {
     if (row == size - 1)
         return *this;
 
     Board newBoard(*this);
-    swap(newBoard.tiles[row][col], newBoard.tiles[row + 1][col]);
+    short index = row * size + col;
+    swap(newBoard.tiles[index], newBoard.tiles[index + size]);
     newBoard.g++;
     return newBoard;
 }
@@ -260,21 +242,22 @@ Board Board::moveDown(int row, int col)
 vector<Board> Board::neighbors()
 {
     vector<Board> neighbors;
-    vector<pair<int, int>> zeroPositions;
+    vector<short> zeroPositions;
 
-    for (int i = 0; i < size; ++i)
+    // Tìm vị trí các ô 0
+    for (short i = 0; i < size * size; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        if (tiles[i] == 0)
         {
-            if (tiles[i][j] == 0)
-            {
-                zeroPositions.emplace_back(i, j);
-            }
+            zeroPositions.push_back(i);
         }
     }
 
-    for (const auto &[row, col] : zeroPositions)
+    for (short index : zeroPositions)
     {
+        short row = index / size;
+        short col = index % size;
+
         if (row > 0)
             neighbors.push_back(moveUp(row, col));
         if (row < size - 1)
@@ -288,54 +271,62 @@ vector<Board> Board::neighbors()
     return neighbors;
 }
 
-Board Board::zero5678()
+
+Board Board::zeroExcluded(vector<int> zeros) const
 {
     Board newBoard(*this);
-    for (int i = 0; i < size; ++i)
+    std::unordered_set<int> excluded(zeros.begin(), zeros.end());
+
+    for (short i = 0; i < size * size; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        if (excluded.find(newBoard.tiles[i]) != excluded.end()) 
         {
-            if (newBoard.tiles[i][j] == 5)
-                newBoard.tiles[i][j] = 0;
-            else if (newBoard.tiles[i][j] == 6)
-                newBoard.tiles[i][j] = 0;
-            else if (newBoard.tiles[i][j] == 7)
-                newBoard.tiles[i][j] = 0;
-            else if (newBoard.tiles[i][j] == 8)
-                newBoard.tiles[i][j] = 0;
+            newBoard.tiles[i] = 0; 
         }
     }
     return newBoard;
 }
 
-Board Board::zero1234()
+// zeroExcept
+Board Board::zeroExcept(vector<int> notZero) const
 {
     Board newBoard(*this);
-    for (int i = 0; i < size; ++i)
+    std::unordered_set<int> allowed(notZero.begin(), notZero.end());
+
+    for (short i = 0; i < size * size; ++i)
     {
-        for (int j = 0; j < size; ++j)
+        if (allowed.find(newBoard.tiles[i]) == allowed.end()) 
         {
-            if (newBoard.tiles[i][j] == 1)
-                newBoard.tiles[i][j] = 0;
-            else if (newBoard.tiles[i][j] == 2)
-                newBoard.tiles[i][j] = 0;
-            else if (newBoard.tiles[i][j] == 3)
-                newBoard.tiles[i][j] = 0;
-            else if (newBoard.tiles[i][j] == 4)
-                newBoard.tiles[i][j] = 0;
+            newBoard.tiles[i] = 0; 
         }
     }
     return newBoard;
 }
+
+
 
 bool Board::operator<(const Board &b) const
 {
-    return mahanattan() + g < b.mahanattan() + b.g;
+    // using manhattan distance as heuristic
+    // return mahanattan() + g < b.mahanattan() + b.g;
+    
+    //using hamming distance as heuristic
+    // return hamming() + g < b.hamming() + b.g;
+
+    //using pattern database as heuristic
+    return extractHeuristicFromPatternDB() + g < b.extractHeuristicFromPatternDB() + b.g;
 }
 
 bool Board::operator>(const Board &b) const
 {
-    return mahanattan() + g > b.mahanattan() + b.g;
+    // using manhattan distance as heuristic
+    // return mahanattan() + g > b.mahanattan() + b.g;
+    
+    //using hamming distance as heuristic
+    // return hamming() + g > b.hamming() + b.g;
+
+    //using pattern database as heuristic
+    return extractHeuristicFromPatternDB() + g > b.extractHeuristicFromPatternDB() + b.g;
 }
 
 bool Board::operator==(const Board &b) const
@@ -348,7 +339,7 @@ bool Board::operator!=(const Board &b) const
     return !equal(b);
 }
 
-int Board::getSize()
+short Board::getSize()
 {
     return this->size;
 }

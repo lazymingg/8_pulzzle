@@ -4,105 +4,149 @@
 
 Solver::Solver(Board initial) : initial(initial), moves(0)
 {
-    std::unordered_set<std::string> visited;
-    std::priority_queue<Board, std::vector<Board>, std::greater<Board>> pq;
-    std::unordered_map<std::string, std::string> parent;
+    // auto start = std::chrono::high_resolution_clock::now();
 
-    pq.push(initial);
-    parent[initial.toString()] = "";
+    // std::unordered_set<std::string> visited;
+    // std::priority_queue<Board, std::vector<Board>, std::greater<Board>> pq;
+    // std::unordered_map<std::string, std::string> parent;
 
-    Board goalBoard(0, true);
-    bool found = false;
+    // pq.push(initial);
+    // parent[initial.toString()] = "";
+
+    // Board goalBoard(0, true);
+    // bool found = false;
+
+    // while (!pq.empty())
+    // {
+    //     Board current = pq.top();
+    //     pq.pop();
+
+    //     if (visited.find(current.hashString()) != visited.end())
+    //         continue;
+    //     visited.insert(current.hashString());
+
+    //     if (current.isGoal())
+    //     {
+    //         goalBoard = current;
+    //         found = true;
+    //         break;
+    //     }
+
+    //     std::vector<Board> neighbors = current.neighbors();
+    //     for (Board neighbor : neighbors)
+    //     {
+    //         if (visited.find(neighbor.hashString()) == visited.end())
+    //         {
+    //             if (parent.find(neighbor.toString()) == parent.end())
+    //                 parent[neighbor.toString()] = current.toString();
+    //             pq.push(neighbor);
+    //         }
+    //     }
+    // }
+
+    // if (found)
+    // {
+    //     std::vector<std::string> path;
+    //     std::string currentState = goalBoard.toString();
+    //     while (!currentState.empty())
+    //     {
+    //         path.push_back(currentState);
+    //         currentState = parent[currentState];
+    //     }
+    //     std::reverse(path.begin(), path.end());
+    //     auto end = std::chrono::high_resolution_clock::now(); //  Kết thúc đo
+    //     std::chrono::duration<double> elapsed = end - start;
+    //     std::cout << "time count: " << elapsed.count() << " seccond\n";
+    //     std::cout << "Solution found in " << path.size() - 1 << " moves:" << std::endl;
+    //     for (const auto &state : path)
+    //     {
+    //         std::cout << state << std::endl;
+    //     }
+    // }
+    // else
+    // {
+    //     std::cout << "No solution found." << std::endl;
+    // }
+
+    IDAStar(initial);
+}
+
+int search(Board &node, int threshold, unordered_map<string, string> &parent)
+{
+    int f = node.extractHeuristicFromPatternDB();
+    if (f > threshold)
+        return f;
+    if (node.isGoal())
+    {
+        cout << "Solution found " << endl;
+        return -1;
+    }
+    
+    int minThreshold = INT_MAX;
+
+    priority_queue<Board, vector<Board>, greater<Board>> pq;
+    for (Board &neighbor : node.neighbors())
+    {
+        if (parent.find(neighbor.toString()) == parent.end())
+        {
+            pq.push(neighbor);
+        }
+    }
 
     while (!pq.empty())
     {
-        Board current = pq.top();
+        Board neighbor = pq.top();
         pq.pop();
+        parent[neighbor.toString()] = node.toString();
 
-        if (visited.find(current.toString()) != visited.end())
-            continue;
-        visited.insert(current.toString());
+        int temp = search(neighbor, threshold, parent);
+        if (temp == -1)
+            return -1;
+        minThreshold = min(minThreshold, temp);
+        parent.erase(neighbor.toString()); // Backtracking
+    }
+    return minThreshold;
+}
 
-        if (current.isGoal())
+
+void Solver::IDAStar(Board &start)
+{
+    int threshold = start.extractHeuristicFromPatternDB();
+    unordered_map<string, string> parent;
+    parent[start.toString()] = ""; // Trạng thái ban đầu không có cha
+
+    while (true)
+    {
+        int temp = search(start, threshold, parent);
+        if (temp == -1)
         {
-            goalBoard = current;
-            found = true;
+            // Tìm trạng thái goal trong `parent`
+            Board goalState(4, true);
+
+            // Truy vết đường đi từ trạng thái goal
+            vector<string> path;
+            string currentState = goalState.toString();
+            while (!currentState.empty() && parent.find(currentState) != parent.end())
+            {
+                path.push_back(currentState);
+                currentState = parent[currentState]; // Đi ngược lên cha
+            }
+
+            // In kết quả
+            cout << "Solution found in " << path.size() - 1 << " moves:" << endl;
+            reverse(path.begin(), path.end());
+            for (const auto &state : path)
+            {
+                cout << state << endl;
+            }
             break;
         }
-
-        std::vector<Board> neighbors = current.neighbors();
-        for (Board neighbor : neighbors)
+        if (temp == INT_MAX)
         {
-            if (visited.find(neighbor.toString()) == visited.end())
-            {
-                if (parent.find(neighbor.toString()) == parent.end())
-                    parent[neighbor.toString()] = current.toString();
-                pq.push(neighbor);
-            }
+            cout << "No solution found." << endl;
+            break;
         }
-    }
-
-    if (found)
-    {
-        std::vector<std::string> path;
-        std::string currentState = goalBoard.toString();
-        while (!currentState.empty())
-        {
-            path.push_back(currentState);
-            currentState = parent[currentState];
-        }
-        std::reverse(path.begin(), path.end());
-
-        std::cout << "Solution found in " << path.size() - 1 << " moves:" << std::endl;
-        for (const auto &state : path)
-        {
-            std::cout << state << std::endl;
-        }
-    }
-    else
-    {
-        std::cout << "No solution found." << std::endl;
+        threshold = temp;
     }
 }
 
-void Solver::storePatternDatabase()
-{
-    Board solvedBoard(this->initial.getSize(), true);
-    solvedBoard = solvedBoard.zero5678();
-
-    std::queue<Board> q;
-    q.push(solvedBoard);
-    // Đánh dấu trạng thái goal ngay từ đầu
-    patternDatabase[solvedBoard.toString()] = 0;
-    
-    int level = 0;
-    while (!q.empty())
-    {
-        int size = q.size();
-        for (int i = 0; i < size; i++)
-        {
-            Board current = q.front();
-            q.pop();
-            // current đã được đánh dấu khi được push, có thể dùng cho các mục đích khác
-            
-            
-            for (Board &neighbor : current.neighbors())
-            {
-                string neighborKey = neighbor.toString();
-                // Nếu neighbor chưa được duyệt, đánh dấu ngay khi push vào queue
-                if (patternDatabase.find(neighborKey) == patternDatabase.end())
-                {
-                    patternDatabase[neighborKey] = level + 1;
-                    q.push(neighbor);
-                }
-            }
-        }
-        level++;
-    }
-}
-
-
-std::unordered_map<std::string, int> Solver::getPatternDatabase()
-{
-    return this->patternDatabase;
-}

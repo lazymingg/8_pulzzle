@@ -1,11 +1,25 @@
 
 #include "Board.h"
 #include "Solver.h"
+#include "PatternDataBase.h"
 using namespace std;
 
 
+//init pattern database
+PatternDataBase *PatternDataBase::instance = nullptr;
+
 int main()
 {
+
+    //init pattern database
+    PatternDataBase::getInstance()->generatePatternDB(3);
+    PatternDataBase::getInstance()->writePatternDB();
+    cout << "Pattern database writed" << endl;
+    // PatternDataBase::getInstance()->readPatternDB();
+    cout << "Pattern database readed" << endl;
+    cout << "Number of patterns: " << PatternDataBase::getInstance()->getNumberOfPatterns() << endl;
+
+
     Board b(3, false);
     while (!b.isSolvable())
     {
@@ -20,17 +34,6 @@ int main()
     if (b.isSolvable())
     {
         Solver solver(b);
-        solver.storePatternDatabase();
-        auto patternDatabase = solver.getPatternDatabase();
-        cout << "Pattern database:" << endl;
-        int count = 0;
-        for (const auto &[pattern, distance] : patternDatabase)
-        {
-            count++;
-            cout << pattern << " -> " << distance << endl;
-        }
-        cout << "Total patterns: " << count << endl;
-        
     }
 
 

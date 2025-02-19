@@ -6,53 +6,58 @@
 #include <algorithm>
 #include <random>
 #include <string>
-#include <utility>
+#include <unordered_map>
+#include <unordered_set>
+#include "PatternDataBase.h"
 
 using namespace std;
 
 class Board {
 private:
-    int size;
-    int **tiles;
-    int g;
-
+    short size;
+    short *tiles;
+    // short x, y;
+    
     void allocateTiles();  // Helper function to allocate memory for tiles
-
+    void deallocateTiles();  // Helper function to deallocate memory for tiles
 public:
+    int g;
     Board();
-    Board(int size, bool solved);
+    Board(short size, bool solved);
     Board(const Board &b);
     ~Board();
 
     Board &operator=(const Board &b);
     string toString() const;
+    string hashString() const;
 
-    int mahanattan() const;
-    int hamming();
+    short mahanattan() const;
+    short hamming() const;
+    short extractHeuristicFromPatternDB() const;
     bool isGoal();
     bool isSolvable();
 
-    int tileAt(int row, int col);
-    void setTileAt(int row, int col, int value);
+    short tileAt(short row, short col);
+    void setTileAt(short row, short col, short value);
 
     bool equal(const Board &board) const;
 
-    Board moveLeft(int row, int col);
-    Board moveRight(int row, int col);
-    Board moveUp(int row, int col);
-    Board moveDown(int row, int col);
+    Board moveLeft(short row, short col);
+    Board moveRight(short row, short col);
+    Board moveUp(short row, short col);
+    Board moveDown(short row, short col);
 
     vector<Board> neighbors();
 
-    Board zero5678();
-    Board zero1234();
+    Board zeroExcluded(vector<int> zeros) const;
+    Board zeroExcept(vector<int> notZero) const;
 
     bool operator<(const Board &b) const;
     bool operator>(const Board &b) const;
     bool operator==(const Board &b) const;
     bool operator!=(const Board &b) const;
 
-    int getSize();
+    short getSize();
 };
 
 #endif // BOARD_H

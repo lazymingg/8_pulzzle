@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <queue>
 #include <string>
+#include <chrono>
 
 class Solver
 {
@@ -15,12 +16,9 @@ private:
     Board initial;
     int moves;
     std::vector<Board> solution;
-    std::unordered_map<std::string, int> patternDatabase;
-
 public:
     Solver(Board initial);
-    void storePatternDatabase();
-    std::unordered_map<std::string, int> getPatternDatabase();
+    void IDAStar(Board &start);
 };
 
 #endif // SOLVER_H

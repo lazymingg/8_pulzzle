@@ -10,6 +10,7 @@
                 "8_pulzzle.cpp",
                 "Board.cpp",
                 "Solver.cpp",
+                "PatternDataBase.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
