@@ -21,7 +21,7 @@ private:
 public:
     static PatternDataBase *getInstance();
     void generatePatternDB(int size);
-    int lookup(string pattern);
+    // int lookup(string pattern);
     int lookup(const Board& board);
     void writePatternDB();
     void readPatternDB();

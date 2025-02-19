@@ -4,7 +4,7 @@
 
 Solver::Solver(Board initial) : initial(initial), moves(0)
 {
-    // auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
     // std::unordered_set<std::string> visited;
     // std::priority_queue<Board, std::vector<Board>, std::greater<Board>> pq;
@@ -69,11 +69,96 @@ Solver::Solver(Board initial) : initial(initial), moves(0)
     // }
 
     IDAStar(initial);
+    std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - start;
+    std::cout << "Time count: " << elapsed.count() << " seconds" << std::endl;
+
 }
+
+// int search(Board &node, int threshold, unordered_map<string, string> &parent)
+// {
+//     int f = node.extractHeuristicFromPatternDB() + node.g;
+//     // Tắt debug: cout << "f: " << f << endl;
+//     if (f > threshold)
+//         return f;
+//     if (node.isGoal())
+//     {
+//         cout << "Solution found " << endl;
+//         return -1;
+//     }
+    
+//     int minThreshold = INT_MAX;
+
+//     // Lấy vector hàng xóm và (tùy chọn) sắp xếp chúng theo f nếu cần
+//     vector<Board> nbrs = node.neighbors();
+//     // Nếu muốn sắp xếp:
+//     sort(nbrs.begin(), nbrs.end(), [](const Board &a, const Board &b) {
+//         return a.extractHeuristicFromPatternDB() + a.g < b.extractHeuristicFromPatternDB() + b.g;
+//     });
+
+//     for (Board &neighbor : nbrs)
+//     {
+//         if (parent.find(neighbor.toString()) == parent.end())
+//         {
+//             parent[neighbor.toString()] = node.toString();
+//             int temp = search(neighbor, threshold, parent);
+//             if (temp == -1)
+//                 return -1;
+//             minThreshold = min(minThreshold, temp);
+//             parent.erase(neighbor.toString()); // Backtracking
+//         }
+//     }
+//     return minThreshold;
+// }
+
+
+// void Solver::IDAStar(Board &start)
+// {
+//     int threshold = start.extractHeuristicFromPatternDB() + start.g;
+//     unordered_map<string, string> parent;
+//     parent[start.toString()] = "";
+
+//     // Lưu board goal khi tìm thấy (có thể cần biến global hoặc truyền qua tham số)
+//     Board goalState = start; // Khởi tạo tạm; sẽ được cập nhật khi solution được tìm thấy
+
+//     while (true)
+//     {
+//         int temp = search(start, threshold, parent);
+//         if (temp == -1)
+//         {
+//             // Ở đây, thay vì tạo board mới, hãy lấy board goal thật sự
+//             // Giả sử rằng board goal có toString() trùng với trạng thái đích
+//             // Truy vết đường đi từ trạng thái goal bằng parent map
+//             vector<string> path;
+//             string currentState = goalState.toString(); // Cần đảm bảo goalState đã được cập nhật
+//             while (!currentState.empty() && parent.find(currentState) != parent.end())
+//             {
+//                 path.push_back(currentState);
+//                 currentState = parent[currentState];
+//             }
+
+//             cout << "Solution found in " << path.size() - 1 << " moves:" << endl;
+//             reverse(path.begin(), path.end());
+//             for (const auto &state : path)
+//             {
+//                 cout << state << endl;
+//             }
+//             break;
+//         }
+//         if (temp == INT_MAX)
+//         {
+//             cout << "No solution found." << endl;
+//             break;
+//         }
+//         threshold = temp;
+//     }
+// }
+
+// using mahanattan distance as heuristic version
 
 int search(Board &node, int threshold, unordered_map<string, string> &parent)
 {
-    int f = node.extractHeuristicFromPatternDB();
+    int f = node.mahanattan() + node.g;
+    // Tắt debug: cout << "f: " << f << endl;
     if (f > threshold)
         return f;
     if (node.isGoal())
@@ -84,55 +169,53 @@ int search(Board &node, int threshold, unordered_map<string, string> &parent)
     
     int minThreshold = INT_MAX;
 
-    priority_queue<Board, vector<Board>, greater<Board>> pq;
-    for (Board &neighbor : node.neighbors())
+    // Lấy vector hàng xóm và (tùy chọn) sắp xếp chúng theo f nếu cần
+    vector<Board> nbrs = node.neighbors();
+    // Nếu muốn sắp xếp:
+    sort(nbrs.begin(), nbrs.end(), [](const Board &a, const Board &b) {
+        return a.mahanattan() + a.g < b.mahanattan() + b.g;
+    });
+
+    for (Board &neighbor : nbrs)
     {
         if (parent.find(neighbor.toString()) == parent.end())
         {
-            pq.push(neighbor);
+            parent[neighbor.toString()] = node.toString();
+            int temp = search(neighbor, threshold, parent);
+            if (temp == -1)
+                return -1;
+            minThreshold = min(minThreshold, temp);
+            parent.erase(neighbor.toString()); // Backtracking
         }
-    }
-
-    while (!pq.empty())
-    {
-        Board neighbor = pq.top();
-        pq.pop();
-        parent[neighbor.toString()] = node.toString();
-
-        int temp = search(neighbor, threshold, parent);
-        if (temp == -1)
-            return -1;
-        minThreshold = min(minThreshold, temp);
-        parent.erase(neighbor.toString()); // Backtracking
     }
     return minThreshold;
 }
 
-
 void Solver::IDAStar(Board &start)
 {
-    int threshold = start.extractHeuristicFromPatternDB();
+    int threshold = start.mahanattan() + start.g;
     unordered_map<string, string> parent;
-    parent[start.toString()] = ""; // Trạng thái ban đầu không có cha
+    parent[start.toString()] = "";
+
+    // Lưu board goal khi tìm thấy (có thể cần biến global hoặc truyền qua tham số)
+    Board goalState = start; // Khởi tạo tạm; sẽ được cập nhật khi solution được tìm thấy
 
     while (true)
     {
         int temp = search(start, threshold, parent);
         if (temp == -1)
         {
-            // Tìm trạng thái goal trong `parent`
-            Board goalState(4, true);
-
-            // Truy vết đường đi từ trạng thái goal
+            // Ở đây, thay vì tạo board mới, hãy lấy board goal thật sự
+            // Giả sử rằng board goal có toString() trùng với trạng thái đích
+            // Truy vết đường đi từ trạng thái goal bằng parent map
             vector<string> path;
-            string currentState = goalState.toString();
+            string currentState = goalState.toString(); // Cần đảm bảo goalState đã được cập nhật
             while (!currentState.empty() && parent.find(currentState) != parent.end())
             {
                 path.push_back(currentState);
-                currentState = parent[currentState]; // Đi ngược lên cha
+                currentState = parent[currentState];
             }
 
-            // In kết quả
             cout << "Solution found in " << path.size() - 1 << " moves:" << endl;
             reverse(path.begin(), path.end());
             for (const auto &state : path)
@@ -149,4 +232,6 @@ void Solver::IDAStar(Board &start)
         threshold = temp;
     }
 }
+
+
 

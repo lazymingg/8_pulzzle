@@ -15,13 +15,18 @@ PatternDataBase *PatternDataBase::getInstance()
 
 void PatternDataBase::generatePatternDB(int size)
 {
-    // this->notZeroCase.push_back({1,2,3,6,15});
-    // this->notZeroCase.push_back({4,5,8,9,12});
-    // this->notZeroCase.push_back({7,10,11,13,14});
+    if (size == 3)
+    {
+        this->notZeroCase.push_back({1, 2, 3, 4});
+        this->notZeroCase.push_back({5, 6, 7, 8});
+    }
+    if (size == 4)
+    {
+        this->notZeroCase.push_back({1,2,3,6,15});
+        this->notZeroCase.push_back({4,5,8,9,12});
+        this->notZeroCase.push_back({7,10,11,13,14});
+    }
 
-    this->notZeroCase.push_back({1, 2, 3, 4});
-    this->notZeroCase.push_back({5, 6, 7, 8});
-    // this->notZeroCase.push_back({2, 4, 6, 8});
 
     vector<Board> goalStates;
     // generate goal states
@@ -30,8 +35,6 @@ void PatternDataBase::generatePatternDB(int size)
         Board goal(size, true);
         goal = goal.zeroExcept(notZero);
         goalStates.push_back(goal);
-        
-        cout << "Goal state: " << goal.toString() << endl;
     }
 
 
@@ -72,25 +75,23 @@ void PatternDataBase::generatePatternDB(int size)
     }
 }
 
-int PatternDataBase::lookup(string pattern)
-{
-    return patternDB[pattern];
-}
+// int PatternDataBase::lookup(string pattern)
+// {
+//     return patternDB[pattern];
+// }
 
 int PatternDataBase::lookup(const Board& board)
 {
-    int max = 0;
+    int sum = 0;
     for (vector<int> notZero : notZeroCase)
     {
         Board temp = board.zeroExcept(notZero);
+
         string pattern = temp.hashString();
-        int moves = lookup(pattern);
-        if (moves > max)
-        {
-            max = moves;
-        }
+        sum += patternDB[pattern];
     }
-    return max;
+    return sum;
+
 }
 
 void PatternDataBase::writePatternDB()
@@ -122,8 +123,24 @@ void PatternDataBase::readPatternDB()
     int distance;
     while (file >> pattern >> distance)
     {
-        insert(pattern, distance);
+        patternDB[pattern] = distance;
+
     }
+
+    // //verify read data read vs written data
+    // // loop through patternDB and compare with newPatternDB
+    // for (const auto &[pattern, distance] : patternDB)
+    // {
+    //     if (newPatternDB[pattern] != distance)
+    //     {
+    //         std::cerr << "Error: PatternDB read failed, possible corruption.\n";
+    //         return;
+    //     }
+    // }
+
+    // cout << "PatternDB read successfully" << endl;
+
+    // patternDB = newPatternDB;
 
     if (file.fail() && !file.eof()) // Kiểm tra nếu file có lỗi khi đọc
     {

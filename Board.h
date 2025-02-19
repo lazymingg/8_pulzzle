@@ -22,9 +22,12 @@ private:
     void deallocateTiles();  // Helper function to deallocate memory for tiles
 public:
     int g;
+
     Board();
     Board(short size, bool solved);
     Board(const Board &b);
+    //move constructor
+    Board(Board &&b);
     ~Board();
 
     Board &operator=(const Board &b);

@@ -29,6 +29,13 @@ Board::Board(const Board &b) : g(b.g), size(b.size)
     copy(b.tiles, b.tiles + size * size, tiles);
 }
 
+Board::Board(Board &&b)
+{
+    size = b.size;
+    g = b.g;
+    tiles = b.tiles;
+    b.tiles = nullptr;
+}
 
 Board::~Board()
 {
@@ -158,13 +165,15 @@ bool Board::isSolvable()
                 inversion++;
         }
     }
+    // cout << "Inversion: " << inversion << endl;
 
     if (size % 2 == 1)
         return inversion % 2 == 0;
 
     short blankRowFromBottom = size - blankRow;
+    // cout << "Blank row from bottom: " << blankRowFromBottom << endl;
 
-    return (inversion + blankRowFromBottom) % 2 == 0;
+    return (inversion + blankRowFromBottom) % 2 == 1;
 }
 
 
@@ -191,83 +200,56 @@ bool Board::equal(const Board &board) const
     return true;
 }
 
-Board Board::moveLeft(short row, short col)
-{
-    if (col == 0)
-        return *this;
-
-    Board newBoard(*this);
-    short index = row * size + col;
-    swap(newBoard.tiles[index], newBoard.tiles[index - 1]);
-    newBoard.g++;
-    return newBoard;
-}
-
-Board Board::moveRight(short row, short col)
-{
-    if (col == size - 1)
-        return *this;
-
-    Board newBoard(*this);
-    short index = row * size + col;
-    swap(newBoard.tiles[index], newBoard.tiles[index + 1]);
-    newBoard.g++;
-    return newBoard;
-}
-
-Board Board::moveUp(short row, short col)
-{
-    if (row == 0)
-        return *this;
-
-    Board newBoard(*this);
-    short index = row * size + col;
-    swap(newBoard.tiles[index], newBoard.tiles[index - size]);
-    newBoard.g++;
-    return newBoard;
-}
-
-Board Board::moveDown(short row, short col)
-{
-    if (row == size - 1)
-        return *this;
-
-    Board newBoard(*this);
-    short index = row * size + col;
-    swap(newBoard.tiles[index], newBoard.tiles[index + size]);
-    newBoard.g++;
-    return newBoard;
-}
-
 vector<Board> Board::neighbors()
 {
     vector<Board> neighbors;
+    // Tìm tất cả các vị trí có ô 0
     vector<short> zeroPositions;
-
-    // Tìm vị trí các ô 0
     for (short i = 0; i < size * size; ++i)
     {
         if (tiles[i] == 0)
-        {
             zeroPositions.push_back(i);
-        }
     }
 
+    // Với mỗi vị trí 0, tạo các trạng thái mới theo các hướng hợp lệ
     for (short index : zeroPositions)
     {
         short row = index / size;
         short col = index % size;
 
+        // Di chuyển lên
         if (row > 0)
-            neighbors.push_back(moveUp(row, col));
+        {
+            Board neighbor(*this);    // copy board hiện tại một lần
+            swap(neighbor.tiles[index], neighbor.tiles[index - size]);
+            neighbor.g++;
+            neighbors.push_back(std::move(neighbor));
+        }
+        // Di chuyển xuống
         if (row < size - 1)
-            neighbors.push_back(moveDown(row, col));
+        {
+            Board neighbor(*this);
+            swap(neighbor.tiles[index], neighbor.tiles[index + size]);
+            neighbor.g++;
+            neighbors.push_back(std::move(neighbor));
+        }
+        // Di chuyển sang trái
         if (col > 0)
-            neighbors.push_back(moveLeft(row, col));
+        {
+            Board neighbor(*this);
+            swap(neighbor.tiles[index], neighbor.tiles[index - 1]);
+            neighbor.g++;
+            neighbors.push_back(std::move(neighbor));
+        }
+        // Di chuyển sang phải
         if (col < size - 1)
-            neighbors.push_back(moveRight(row, col));
+        {
+            Board neighbor(*this);
+            swap(neighbor.tiles[index], neighbor.tiles[index + 1]);
+            neighbor.g++;
+            neighbors.push_back(std::move(neighbor));
+        }
     }
-
     return neighbors;
 }
 
@@ -308,25 +290,25 @@ Board Board::zeroExcept(vector<int> notZero) const
 bool Board::operator<(const Board &b) const
 {
     // using manhattan distance as heuristic
-    // return mahanattan() + g < b.mahanattan() + b.g;
+    return mahanattan() + g < b.mahanattan() + b.g;
     
     //using hamming distance as heuristic
     // return hamming() + g < b.hamming() + b.g;
 
     //using pattern database as heuristic
-    return extractHeuristicFromPatternDB() + g < b.extractHeuristicFromPatternDB() + b.g;
+    // return extractHeuristicFromPatternDB() + g < b.extractHeuristicFromPatternDB() + b.g;
 }
 
 bool Board::operator>(const Board &b) const
 {
     // using manhattan distance as heuristic
-    // return mahanattan() + g > b.mahanattan() + b.g;
+    return mahanattan() + g > b.mahanattan() + b.g;
     
     //using hamming distance as heuristic
     // return hamming() + g > b.hamming() + b.g;
 
     //using pattern database as heuristic
-    return extractHeuristicFromPatternDB() + g > b.extractHeuristicFromPatternDB() + b.g;
+    // return extractHeuristicFromPatternDB() + g > b.extractHeuristicFromPatternDB() + b.g;
 }
 
 bool Board::operator==(const Board &b) const
