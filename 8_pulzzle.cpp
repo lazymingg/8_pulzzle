@@ -12,8 +12,8 @@ int main()
 {
 
     // init pattern database
-    PatternDataBase::getInstance()->generatePatternDB(3);
-    PatternDataBase::getInstance()->writePatternDB();
+    // PatternDataBase::getInstance()->generatePatternDB(4);
+    // PatternDataBase::getInstance()->writePatternDB();
     cout << "Pattern database writed" << endl;
     // PatternDataBase::getInstance()->readPatternDB();
     cout << "Pattern database readed" << endl;
@@ -47,7 +47,29 @@ int main()
     // cout << "Average time over " << solvedCount << " boards: " << averageTime << " seconds." << endl;
 
     // solve one board
+    // 5 15 4 3 
+    // 12 14 8 10 
+    // 7 9 11 6 
+    // 2 0 1 13 
+
     Board b(4, false);
+    b.setTileAt(0, 0, 5);
+    b.setTileAt(0, 1, 15);
+    b.setTileAt(0, 2, 4);
+    b.setTileAt(0, 3, 3);
+    b.setTileAt(1, 0, 12);
+    b.setTileAt(1, 1, 14);
+    b.setTileAt(1, 2, 8);
+    b.setTileAt(1, 3, 10);
+    b.setTileAt(2, 0, 7);
+    b.setTileAt(2, 1, 9);
+    b.setTileAt(2, 2, 11);
+    b.setTileAt(2, 3, 6);
+    b.setTileAt(3, 0, 2);
+    b.setTileAt(3, 1, 0);
+    b.setTileAt(3, 2, 1);
+    b.setTileAt(3, 3, 13);
+
     while (!b.isSolvable())
     {
         b = Board(4, false);

@@ -35,6 +35,7 @@ public:
     short mahanattan() const;
     short hamming() const;
     short extractHeuristicFromPatternDB() const;
+    int heuristic() const;
     bool isGoal();
     bool isSolvable();
 
@@ -43,20 +44,9 @@ public:
 
     bool equal(const Board &board) const;
 
-    Board moveLeft(short row, short col);
-    Board moveRight(short row, short col);
-    Board moveUp(short row, short col);
-    Board moveDown(short row, short col);
-
     vector<Board> neighbors();
 
-    Board zeroExcluded(vector<int> zeros) const;
     Board zeroExcept(vector<int> notZero) const;
-
-    bool operator<(const Board &b) const;
-    bool operator>(const Board &b) const;
-    bool operator==(const Board &b) const;
-    bool operator!=(const Board &b) const;
 
     short getSize();
 };

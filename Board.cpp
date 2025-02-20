@@ -46,7 +46,6 @@ Board &Board::operator=(const Board &b)
 {
     if (this == &b)
         return *this;
-
     delete[] tiles;
     size = b.size;
     g = b.g;
@@ -126,6 +125,15 @@ short Board::extractHeuristicFromPatternDB() const
 {
     PatternDataBase *patternDB = PatternDataBase::getInstance();
     return patternDB->lookup(*this);
+}
+
+int Board::heuristic() const
+{
+    //using mahattan
+    return mahanattan();
+
+    //using pdb
+    return extractHeuristicFromPatternDB();
 }
 
 bool Board::isGoal()
@@ -251,22 +259,6 @@ vector<Board> Board::neighbors()
     return neighbors;
 }
 
-
-Board Board::zeroExcluded(vector<int> zeros) const
-{
-    Board newBoard(*this);
-    std::unordered_set<int> excluded(zeros.begin(), zeros.end());
-
-    for (short i = 0; i < size * size; ++i)
-    {
-        if (excluded.find(newBoard.tiles[i]) != excluded.end()) 
-        {
-            newBoard.tiles[i] = 0; 
-        }
-    }
-    return newBoard;
-}
-
 // zeroExcept
 Board Board::zeroExcept(vector<int> notZero) const
 {
@@ -285,39 +277,39 @@ Board Board::zeroExcept(vector<int> notZero) const
 
 
 
-bool Board::operator<(const Board &b) const
-{
-    // using manhattan distance as heuristic
-    return mahanattan() + g < b.mahanattan() + b.g;
+// bool Board::operator<(const Board &b) const
+// {
+//     // using manhattan distance as heuristic
+//     return mahanattan() + g < b.mahanattan() + b.g;
     
-    //using hamming distance as heuristic
-    // return hamming() + g < b.hamming() + b.g;
+//     //using hamming distance as heuristic
+//     // return hamming() + g < b.hamming() + b.g;
 
-    //using pattern database as heuristic
-    // return extractHeuristicFromPatternDB() + g < b.extractHeuristicFromPatternDB() + b.g;
-}
+//     //using pattern database as heuristic
+//     // return extractHeuristicFromPatternDB() + g < b.extractHeuristicFromPatternDB() + b.g;
+// }
 
-bool Board::operator>(const Board &b) const
-{
-    // using manhattan distance as heuristic
-    return mahanattan() + g > b.mahanattan() + b.g;
+// bool Board::operator>(const Board &b) const
+// {
+//     // using manhattan distance as heuristic
+//     return mahanattan() + g > b.mahanattan() + b.g;
     
-    //using hamming distance as heuristic
-    // return hamming() + g > b.hamming() + b.g;
+//     //using hamming distance as heuristic
+//     // return hamming() + g > b.hamming() + b.g;
 
-    //using pattern database as heuristic
-    // return extractHeuristicFromPatternDB() + g > b.extractHeuristicFromPatternDB() + b.g;
-}
+//     //using pattern database as heuristic
+//     // return extractHeuristicFromPatternDB() + g > b.extractHeuristicFromPatternDB() + b.g;
+// }
 
-bool Board::operator==(const Board &b) const
-{
-    return equal(b);
-}
+// bool Board::operator==(const Board &b) const
+// {
+//     return equal(b);
+// }
 
-bool Board::operator!=(const Board &b) const
-{
-    return !equal(b);
-}
+// bool Board::operator!=(const Board &b) const
+// {
+//     return !equal(b);
+// }
 
 short Board::getSize()
 {

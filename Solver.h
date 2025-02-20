@@ -15,7 +15,6 @@ class Solver
 private:
     Board initial;
     int moves;
-    std::vector<Board> solution;
 public:
     Solver(Board initial);
     void IDAStar(Board &start);
