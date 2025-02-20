@@ -12,12 +12,12 @@ int main()
 {
 
     // init pattern database
-    // PatternDataBase::getInstance()->generatePatternDB(4);
-    // PatternDataBase::getInstance()->writePatternDB();
+    PatternDataBase::getInstance()->generatePatternDB(3);
+    PatternDataBase::getInstance()->writePatternDB();
     cout << "Pattern database writed" << endl;
     // PatternDataBase::getInstance()->readPatternDB();
     cout << "Pattern database readed" << endl;
-    // cout << "Number of patterns: " << PatternDataBase::getInstance()->getNumberOfPatterns() << endl;
+    cout << "Number of patterns: " << PatternDataBase::getInstance()->getNumberOfPatterns() << endl;
 
     // double totalTime = 0.0;
     // int solvedCount = 0;
@@ -48,52 +48,10 @@ int main()
 
     // solve one board
     Board b(4, false);
-    // while (!b.isSolvable())
-    // {
-    //     b = Board(4, false);
-    // }
-    // 6 10 9 13
-    // 2 3 5 7
-    // 8 4 0 1
-    // 11 14 12 15  
-    // b.setTileAt(0, 0, 6);
-    // b.setTileAt(0, 1, 10);
-    // b.setTileAt(0, 2, 9);
-    // b.setTileAt(0, 3, 13);
-    // b.setTileAt(1, 0, 2);
-    // b.setTileAt(1, 1, 3);
-    // b.setTileAt(1, 2, 5);
-    // b.setTileAt(1, 3, 7);
-    // b.setTileAt(2, 0, 8);
-    // b.setTileAt(2, 1, 4);
-    // b.setTileAt(2, 2, 0);
-    // b.setTileAt(2, 3, 1);
-    // b.setTileAt(3, 0, 11);
-    // b.setTileAt(3, 1, 14);
-    // b.setTileAt(3, 2, 12);
-    // b.setTileAt(3, 3, 15);
-
-//     5   1   2   3
-// 9   6   4   8
-// 13 10   7  12
-// 14 11 15   0
-    b.setTileAt(0, 0, 5);
-    b.setTileAt(0, 1, 1);
-    b.setTileAt(0, 2, 2);
-    b.setTileAt(0, 3, 3);
-    b.setTileAt(1, 0, 9);
-    b.setTileAt(1, 1, 6);
-    b.setTileAt(1, 2, 4);
-    b.setTileAt(1, 3, 8);
-    b.setTileAt(2, 0, 13);
-    b.setTileAt(2, 1, 10);
-    b.setTileAt(2, 2, 7);
-    b.setTileAt(2, 3, 12);
-    b.setTileAt(3, 0, 14);
-    b.setTileAt(3, 1, 11);
-    b.setTileAt(3, 2, 15);
-    b.setTileAt(3, 3, 0);
-
+    while (!b.isSolvable())
+    {
+        b = Board(4, false);
+    }
 
     
     cout << "Initial board: " << endl;
@@ -116,3 +74,4 @@ int main()
     
     return 0;
 }
+ 

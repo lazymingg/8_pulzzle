@@ -56,17 +56,6 @@ Board &Board::operator=(const Board &b)
     return *this;
 }
 
-void Board::allocateTiles()
-{
-    tiles = new short[size * size];
-}
-
-void Board::deallocateTiles()
-{
-    delete[] tiles;
-}
-
-
 string Board::toString() const
 {
     string s = to_string(size) + "\n";
@@ -86,9 +75,19 @@ string Board::hashString() const
     string s = "";
     for (short i = 0; i < size * size; ++i)
     {
-        s += to_string(tiles[i]);
+        s += to_string(tiles[i]) + ",";
     }
     return s;
+}
+
+int Board::hash() const
+{
+    int h = 0;
+    for (short i = 0; i < size * size; ++i)
+    {
+        h = 31 * h + tiles[i];
+    }
+    return h;
 }
 
 short Board::mahanattan() const
@@ -151,7 +150,7 @@ bool Board::isSolvable()
     for (short i = 0; i < size * size; ++i)
     {
         if (tiles[i] == 0)
-            blankRow = i / size; 
+            blankRow = i / size;
         else
             tempTiles.push_back(tiles[i]);
     }
@@ -165,13 +164,13 @@ bool Board::isSolvable()
                 inversion++;
         }
     }
-    // cout << "Inversion: " << inversion << endl;
+    cout << "Inversion: " << inversion << endl;
 
     if (size % 2 == 1)
         return inversion % 2 == 0;
 
     short blankRowFromBottom = size - blankRow;
-    // cout << "Blank row from bottom: " << blankRowFromBottom << endl;
+    cout << "Blank row from bottom: " << blankRowFromBottom << endl;
 
     return (inversion + blankRowFromBottom) % 2 == 1;
 }
@@ -199,7 +198,6 @@ bool Board::equal(const Board &board) const
     }
     return true;
 }
-
 vector<Board> Board::neighbors()
 {
     vector<Board> neighbors;
@@ -222,7 +220,7 @@ vector<Board> Board::neighbors()
         {
             Board neighbor(*this);    // copy board hiện tại một lần
             swap(neighbor.tiles[index], neighbor.tiles[index - size]);
-            neighbor.g++;
+            neighbor.g += 1;
             neighbors.push_back(std::move(neighbor));
         }
         // Di chuyển xuống
@@ -230,7 +228,7 @@ vector<Board> Board::neighbors()
         {
             Board neighbor(*this);
             swap(neighbor.tiles[index], neighbor.tiles[index + size]);
-            neighbor.g++;
+            neighbor.g += 1;
             neighbors.push_back(std::move(neighbor));
         }
         // Di chuyển sang trái
@@ -238,7 +236,7 @@ vector<Board> Board::neighbors()
         {
             Board neighbor(*this);
             swap(neighbor.tiles[index], neighbor.tiles[index - 1]);
-            neighbor.g++;
+            neighbor.g += 1;
             neighbors.push_back(std::move(neighbor));
         }
         // Di chuyển sang phải
@@ -246,7 +244,7 @@ vector<Board> Board::neighbors()
         {
             Board neighbor(*this);
             swap(neighbor.tiles[index], neighbor.tiles[index + 1]);
-            neighbor.g++;
+            neighbor.g += 1;
             neighbors.push_back(std::move(neighbor));
         }
     }

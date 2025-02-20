@@ -17,9 +17,6 @@ private:
     short size;
     short *tiles;
     // short x, y;
-    
-    void allocateTiles();  // Helper function to allocate memory for tiles
-    void deallocateTiles();  // Helper function to deallocate memory for tiles
 public:
     int g;
 
@@ -33,6 +30,7 @@ public:
     Board &operator=(const Board &b);
     string toString() const;
     string hashString() const;
+    int hash() const;
 
     short mahanattan() const;
     short hamming() const;

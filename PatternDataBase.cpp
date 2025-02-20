@@ -66,6 +66,7 @@ void PatternDataBase::generatePatternDB(int size)
                     if (patternDB.find(neighborKey) == patternDB.end())
                     {
                         insert(neighborKey, level);
+                        // cout << "level: " << level << "g: " << neighbor.g << endl;
                         q.push(neighbor);
                     }
                 }
